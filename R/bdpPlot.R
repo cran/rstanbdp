@@ -19,10 +19,11 @@
 #' @export
 #' @param bdpreg bdpreg object created with bdpreg
 #' @param ci Probability for the HDI credibility interval. Default 0.95
+#' @param ... Arguments passed to `plot` (e.g. `xlim`, `xlab`, `main`)
 #' @return no return
 #'
 
-bdpPlot <- function(bdpreg,ci=0.95){
+bdpPlot <- function(bdpreg,ci=0.95,...){
 
   stanRegr <- bdpreg$out
   dat <- bdpreg$standata
@@ -31,15 +32,17 @@ bdpPlot <- function(bdpreg,ci=0.95){
   coef.ab<-rstan::summary(stanRegr)$summary[,1]
 
   if (dat$heteroscedastic == "linear") {
-    heteroscedastic.text <- "Linear heteroscedastic model with n="
-  }else{
-    heteroscedastic.text <- "Homoscedastic model with n="
+    heteroscedastic.text <- "Linear heteroscedastic model"
+  } else if (dat$heteroscedastic == "exponential") {
+    heteroscedastic.text <- "Exponential heteroscedastic model"
+  } else {
+    heteroscedastic.text <- "Homoscedastic model"
   }
 
   #data <- cbind(X,Y)
   #dat <- as.data.frame(na.omit(data))
 
-  plot(dat$X,dat$Y,xlab="X",ylab="Y")
+  plot(dat$X,dat$Y,xlab="X",ylab="Y",...)
 
   abline(a=coef.ab["intercept"],b=coef.ab["slope"],col="blue",lwd=2)
   abline(a=0,b=1,col="red",lty=2)
@@ -64,17 +67,20 @@ bdpPlot <- function(bdpreg,ci=0.95){
   #lines(xvall$X,pred_h[,2],col="blue",lty=2)
 
   legend("bottomright",legend=c("Regression","Identity"),
-         lty=c(1,2),lwd=c(2,1),col=c("blue","red"))
+         lty=c(1,2),lwd=c(2,1),col=c("blue","red"),
+         title=paste0("n = ",dat$N,", d.f. = ",dat$df))
 
-  mtext(paste0(heteroscedastic.text,dat$N," data points. \n y = ",signif(coef.ab["slope"],5),"*x",ifelse(coef.ab["intercept"] > 0,"+","-"),
+  mtext(paste0(heteroscedastic.text,"\n y = ",signif(coef.ab["slope"],5),"*x",ifelse(coef.ab["intercept"] > 0,"+","-"),
               abs(signif(coef.ab["intercept"],5))),
-        side=3, line=-2,adj=0.1,font=1)
+        side=3, line=-2,adj=0.02,cex=1)
 
   mtext(paste0(signif(ci,3)*100,"% HDI-CI simulated from the full Bayesian pairs distribution"),
         side=1, line=2,
         #adj=0.1,
-        font=1)
+        cex=1)
 
-  title(paste("Plot of the Bayesian Deming regression"))
+  title(paste("Plot of the Bayesian Deming regression"),cex.main=1)
+
+  grid()
 
 }

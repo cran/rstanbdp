@@ -60,12 +60,13 @@
 #' @param Y Numeric vector of output values.
 #' @param trunc Boolean. Default TRUE. Use truncated slope prior for stability with extreme ErrorRatios.
 #' See \code{slopeTruncMin}.
-#' @param ErrorRatio Deming variance ratio. Default = 1.
+#' @param ErrorRatio Deming variance ratio between reference and test method. Default = 1.
 #' @param df Degree of freedom. Must be df >= 1 (robust Cauchy regression). Default is \eqn{N-2}, For robust
 #' regression set it to \eqn{df < N-2}
 #' @param heteroscedastic Bayesian Deming model choice. Alternatives are:
 #'          \code{"homo"} - Homoscedastic model. Default.\cr
 #'          \code{"linear"} - Heteroscedastic with linear growth of the variance. Highly experimental model.\cr
+#'          \code{"exponential"} - Heteroscedastic with exponential growth of the variance. Highly experimental model.\cr
 #' @param slopeMu Slope normal Mu prior value. Default 1.
 #' @param slopeSigma Slope normal Sigma prior value. Default 0.3.
 #' @param slopeTruncMin slope normal lower truncation limit. Default 0.3333.
@@ -131,7 +132,8 @@ bdpreg <- function(X, Y, ErrorRatio = 1, df = NULL, trunc = TRUE,
   if (missing(heteroscedastic) ) {
     heteroscedastic <- "homo"
   }
-  if((heteroscedastic == "homo") | (heteroscedastic == "linear")){
+
+  if(heteroscedastic %in% c("homo","linear","exponential")){
        heteroscedastic <- heteroscedastic
   }else{ heteroscedastic <-"homo"}
 
@@ -143,7 +145,9 @@ bdpreg <- function(X, Y, ErrorRatio = 1, df = NULL, trunc = TRUE,
   if(!is.null(df)){df = df} else {df = nrow(dat) - 2 }
   stopifnot(df >= 1)
 
-  standata <- list(X = dat[,1], Y = dat[,2], N = nrow(dat), df = df, trunc = trunc,
+  avgXY <- (dat[,1] +  ErrorRatio * dat[,2]) / (1 + ErrorRatio)
+
+  standata <- list(X = dat[,1], Y = dat[,2], avgXY = avgXY, N = nrow(dat), df = df, trunc = trunc,
                    ErrorRatio = ErrorRatio, heteroscedastic = heteroscedastic,
                    slopeMu = slopeMu, slopeSigma = slopeSigma,
                    slopeTruncMin = slopeTruncMin, slopeTruncMax = slopeTruncMax,
@@ -158,14 +162,16 @@ bdpreg <- function(X, Y, ErrorRatio = 1, df = NULL, trunc = TRUE,
       out <- rstan::sampling(stanmodels$bdpreg_linhettrunc, data = standata, ...)
     } else {
       out <- rstan::sampling(stanmodels$bdpreg_linhet, data = standata, ...)
-    }
-  } else {
+      }
+} else if (heteroscedastic == "exponential"){
+    out <- rstan::sampling(stanmodels$bdpreg_exphettrunc, data = standata, ...)
+} else {
   if (trunc == TRUE){
     out <- rstan::sampling(stanmodels$bdpreg_homotrunc, data = standata, ...)
   }else{
     out <- rstan::sampling(stanmodels$bdpreg_homo, data = standata, ...)
   }
-  }
+}
 
   ret<-list(out=out,standata=standata)
   attr(ret,"class") <- "bdpreg"

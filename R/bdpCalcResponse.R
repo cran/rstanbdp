@@ -27,15 +27,17 @@
 bdpCalcResponse<-function(bdpreg,Xval,ci=0.95,...){
 
   stanRegr <- bdpreg$out
-  #dat <- bdpreg$standata
+  dat <- bdpreg$standata
 
 
   extr_r <- rstan::extract(stanRegr,pars=c("intercept","slope"))
   coef.ab<-rstan::summary(stanRegr)$summary[,1]
 
-  if (names(coef.ab[4]) == "Beta") {
+  if (dat$heteroscedastic == "linear") {
     het.text <- "Linear heteroscedastic model"
-  }else{
+  } else if (dat$heteroscedastic == "exponential") {
+    het.text <- "Exponential heteroscedastic model"
+  } else {
     het.text <- "Homoscedastic model"
   }
 
@@ -59,16 +61,18 @@ bdpCalcResponse<-function(bdpreg,Xval,ci=0.95,...){
   abline(v=Xval, col="black",lty=2)
 
   legend("topright",legend=c("Res, HDI-CI","X value"),
-         lty=c(2,2),lwd=c(1,1),col=c("red","black"))
+         lty=c(2,2),lwd=c(1,1),col=c("red","black"),
+         title=paste0("n = ",dat$N,", d.f. = ",dat$df),
+         cex=1)
 
   mtext(paste0(het.text,"\n Res Y = ",signif(rstan::summary(pred_r)[4],5),"\n HDI-CI ",signif(ci,3)*100,"% \n [ ",signif(ci.hdi[2],5)," ; ",signif(ci.hdi[3],5)," ]"),
-        side=3, line=-3,adj=0.1,font=1)
+        side=3, line=-3,adj=0.02,cex=1)
 
   mtext(paste("Y predictions simulated from the full Bayesian pairs distribution"),
         side=1, line=2,
         #adj=0.1,
-        font=1)
+        cex=1)
 
-  title(paste("Histogram of the full response for X =",Xval))
+  title(paste("Histogram of the full response for X =",Xval),cex.main=1)
 
 }

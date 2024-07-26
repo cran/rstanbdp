@@ -1,3 +1,18 @@
+## version 0.0.3
+
+---
+
+### Added exponential error structure
+
+- option exponential added
+
+### Fixes
+
+- Average X,Y value weighted with variance for heteroscedastic models.
+- bdpSummary() extractor function added.
+- Graphical improvements of several plot functions.
+
+
 ## version 0.0.2
 
 ---

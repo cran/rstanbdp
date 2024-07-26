@@ -18,19 +18,24 @@
 #'
 #' @export
 #' @param bdpreg bdpreg object created with bdpreg
+#' @param legend.pos Legend position (e.g. `bottomleft`, `bottomright`, `topright`). Default `bottomleft`
+#' @param legend.horizon Legend `horiz` boolean parameter. Default TRUE.
+#' @param ... Arguments passed to `plot` (e.g. `xlim`, `xlab`, `main`)
 #' @return no return
 #'
 
-bdpPlotResiduals <- function(bdpreg){
+bdpPlotResiduals <- function(bdpreg,legend.pos="bottomleft",legend.horizon=TRUE,...){
 
   extr <- bdpExtract(bdpreg)
 
   dat<-bdpreg$standata
 
   if(dat$heteroscedastic == "linear") {
-    d.text <- "Heteroscedastic linear model"
+    d.text <- "Heteroscedastic linear model with n = "
+  }else if (dat$heteroscedastic == "exponential"){
+    d.text <- "Heteroscedastic exponential model with n = "
   }else{
-      d.text <- "Homoscedastic linear model"
+      d.text <- "Homoscedastic linear model with n = "
     }
 
   ymin <- qt(0.0001,df=dat$N-2)
@@ -47,7 +52,7 @@ bdpPlotResiduals <- function(bdpreg){
     }
 
   plot(extr$avgXY,extr$OptStandardRes, xlab="avgXY", ylab="Studentized residuals",
-       main="Standardized residuals - TA", ylim=c(ymin,ymax))
+       main="Standardized residuals - TA", ylim=c(ymin,ymax),cex.main=1,...)
 
   abline(h=0, lty=1)
 
@@ -57,9 +62,13 @@ bdpPlotResiduals <- function(bdpreg){
 
   abline(h=qt(c(0.001,0.999),df=dat$N-2),col="purple",lty=4)
 
-  mtext(paste0(d.text),
-        side=3, line=-1,adj=0.1,font=1)
+  mtext(paste0(d.text,dat$N," and d.f. = ",dat$df),
+        side=3, line=-1,adj=0.02,font=1)
 
-  legend("topright",legend=c("95%","99%","99.9%"),col=c("black","blue","purple"),lty=2:4)
+  legend(legend.pos,legend=c("95%","99%","99.9%"),
+         col=c("black","blue","purple"),lty=2:4,
+         horiz = legend.horizon,cex=1)
+
+  grid()
 
 }

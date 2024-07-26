@@ -1,6 +1,6 @@
 Package: rstanbdp
 Title: Bayesian Deming Regression for Method Comparison
-Version: 0.0.2
+Version: 0.0.3
 Maintainer: Giorgio Pioda <gfwp@ticino.com>
 Authors@R: 
     person("Giorgio", "Pioda", ,"gfwp@ticino.com",
@@ -27,7 +27,7 @@ LinkingTo: BH (>= 1.66.0), Rcpp (>= 0.12.0), RcppEigen (>= 0.3.3.3.0),
         2.18.0)
 SystemRequirements: GNU make
 NeedsCompilation: yes
-Packaged: 2024-02-22 22:27:31 UTC; gfwp
+Packaged: 2024-07-26 13:45:42 UTC; gfwp
 Author: Giorgio Pioda [aut, cre] (<https://orcid.org/0000-0002-8714-8678>)
 Repository: CRAN
-Date/Publication: 2024-02-23 19:20:08 UTC
+Date/Publication: 2024-07-26 14:30:07 UTC
